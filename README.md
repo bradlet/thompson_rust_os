@@ -4,6 +4,8 @@ Working through https://os.phil-opp.com/ for CS 506 at Portland State University
 ## Build
 This project needs to be built for a bare-metal target environment.
 
+> Note: Following target env is temporary until we setup a custom target.
+
 First, add the compile target via rustup:
 > rustup target add thumbv7em-none-eabihf
 

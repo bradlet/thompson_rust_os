@@ -2,6 +2,7 @@
 name = "thompson_rust_os"
 version = "0.1.0"
 edition = "2021"
+authors = ["Bradley Thompson <bradlet2@pdx.edu>"]
 
 # Disable stack unwinding b/c it has OS dependencies
 [profile.dev]
