@@ -1,0 +1,12 @@
+[package]
+name = "thompson_rust_os"
+version = "0.1.0"
+edition = "2021"
+
+# Disable stack unwinding b/c it has OS dependencies
+[profile.dev]
+panic = "abort"
+[profile.release]
+panic = "abort"
+
+[dependencies]
