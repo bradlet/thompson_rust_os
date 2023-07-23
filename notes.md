@@ -40,3 +40,8 @@
                 gets passed to the kernel.
             -   Both poorly documented.
             -   GRUB needs to be on the system, so Windows and Mac dev is tough.
+-	We can describe our own `target triple` using a json file which specifically defines the target system architecture.
+	-	See `x86_64_os.json`
+	-	Define many things like the Endian-ness for the target system, how to handle stack unwinding (panic-strategy abort means
+	we don't do stack unwinding), etc.
+	-	Compiler features disabled or enabled in the `features` field using '+' or '-' prefixes.
