@@ -51,3 +51,5 @@
         -   SIMD state is 512-1600 bytes, all needs to be realoded to main memory for each syscall or hardware interrupt.
     -   Need to enable `soft-float` b/c x86_64 systems have a dependency on SIMD for floating-point operations -- this tells
         the system to emulate floating point operations through software functions.
+    -   The Rust `core` library is distributed w/ the compiler as a precompiled library, so it only supports valid host triples.
+        So `core` needs to be recompiled for our custom target triple.
