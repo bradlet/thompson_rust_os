@@ -40,8 +40,14 @@
                 gets passed to the kernel.
             -   Both poorly documented.
             -   GRUB needs to be on the system, so Windows and Mac dev is tough.
--	We can describe our own `target triple` using a json file which specifically defines the target system architecture.
-	-	See `x86_64_os.json`
-	-	Define many things like the Endian-ness for the target system, how to handle stack unwinding (panic-strategy abort means
-	we don't do stack unwinding), etc.
-	-	Compiler features disabled or enabled in the `features` field using '+' or '-' prefixes.
+-   We can describe our own `target triple` using a json file which specifically defines the target system architecture.
+    -   See `x86_64_os.json`
+    -   Define many things like the Endian-ness for the target system, how to handle stack unwinding (panic-strategy abort means
+        we don't do stack unwinding), etc.
+    -   Compiler features disabled or enabled in the `features` field using '+' or '-' prefixes.
+    -   `mmx` and `sse` determine if the system support Single Instruction Multiple Data instructions
+        -   Using SIMD registers causing performance problems b/c the OS needs to restore all registers to their OG state when
+            continuing an interrupted program.
+        -   SIMD state is 512-1600 bytes, all needs to be realoded to main memory for each syscall or hardware interrupt.
+    -   Need to enable `soft-float` b/c x86_64 systems have a dependency on SIMD for floating-point operations -- this tells
+        the system to emulate floating point operations through software functions.
