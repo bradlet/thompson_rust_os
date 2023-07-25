@@ -53,3 +53,5 @@
         the system to emulate floating point operations through software functions.
     -   The Rust `core` library is distributed w/ the compiler as a precompiled library, so it only supports valid host triples.
         So `core` needs to be recompiled for our custom target triple.
+        -   Need to use the Rust nightly build to access an unstable feature to re-build `core` for our target system.
+        -   To use nightly, `rustup override set nightly`
