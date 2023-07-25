@@ -8,3 +8,5 @@ This project needs to be built for a bare-metal target environment. As part of t
 we define a target triple in `x86_64_os.json`.
 
 > cargo build --target x86_64_os.json
+
+Note: This is also specified as the default for this repository, in `.cargo/config.toml`
