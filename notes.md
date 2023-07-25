@@ -1,6 +1,13 @@
 # 1 - Freestanding Rust Binary
 
 -   Need to tell the Rust compiler to not include the standard library because it is included by default.
+-   By default the Rust compiler will encode function names with random characters and numbers for the sake
+    of generating a unique function ID (Called "mangling").
+    -   Will do this unless we tell it not to with `#[no_mangle]``
+-   We will use `extern "C"` to specify the C calling convention instead of the Rust
+    calling convention.
+    -   C calling convention is stack-centric: subroutine params, registers, local vars
+        all placed in memory on the stack.
 -   Main is called as the last step of execution; starts in the C runtime library "crt0", then the Rust runtime, then main is called.
     -   We want to overwrite this entrypoint because we won't be using either of those runtimes.
 -   By default Rust will build an executable that is able to run in your current system.
@@ -55,3 +62,7 @@
         So `core` needs to be recompiled for our custom target triple.
         -   Need to use the Rust nightly build to access an unstable feature to re-build `core` for our target system.
         -   To use nightly, `rustup override set nightly`
+-   Starting off on the OS, easiest way to print to screen is using the VGA text buffer.
+    -   Special memory area mapped to VGA hardware so that it's contents are displayed on the screen.
+    -   Memory contains 25 lines, each 80 character cells wide, where each cell contains an ASCII character, and a byte for color.
+    -   Buffer located at `0xb8000`

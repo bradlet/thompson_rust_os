@@ -9,20 +9,29 @@
 
 use core::panic::PanicInfo;
 
+const VGA_BUFFER_ADDRESS: u8 = 0xb8000;
+const OS_WELCOME_MSG: &[u8] = b"Hello World!";
+
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-	loop {}
+    loop {}
 }
 
-/// - Tell the rust compiler to actually name this `_start` instead of encoding
-/// additional information (name mangling) for the sake of unique fn id.
-/// - Use `extern "C"` to specify the C calling convention instead of the Rust
-/// calling convention.
-/// - C calling convention is stack-centric: subroutine params, registers, local vars
-/// all placed in memory on the stack.
 /// - `!` specifies this as a diverging fn; entry point should invoke the `exit` syscall.
 /// - Throws linker error by default b/c program depends on C runtime. Build for bare metal to fix.
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-	loop {}
+    let vga_buffer = VGA_BUFFER_ADDRESS as *mut u8;
+
+    // Enumerate so we can get the index in the welcome msg byte string so that we can use `offset` to
+    // point to the region of memory in the VGA buffer that we want to write our string to.
+    for (i, &byte) in OS_WELCOME_MSG.iter().enumerate() {
+        // Need to wrap operations on the vga_buffer pointer in `unsafe` because rustc can't prove the raw ptr is valid.
+        unsafe {
+            *vga_buffer.offset(i as isize * 2) = byte;
+            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
+        }
+    }
+
+    loop {}
 }
