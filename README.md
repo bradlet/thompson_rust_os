@@ -30,3 +30,13 @@ bootimage requires `llvm-tools-preview` so that also needs to be installed:
 > rustup component add llvm-tools-preview
 
 After that, run `cargo bootimage` to create a bootable disk image for this project.
+
+## Booting in QEMU
+
+On MacOS:
+
+> brew install qemu
+
+Now, assuming you've already ran `cargo bootimage`, you can boot up our kernel in a VM:
+
+> qemu-system-x86_64 -drive format=raw,file=target/x86_64_os/debug/bootimage-thompson_rust_os.bin  
