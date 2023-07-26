@@ -25,4 +25,8 @@ after compilation.
 
 > cargo install bootimage
 
+bootimage requires `llvm-tools-preview` so that also needs to be installed:
+
+> rustup component add llvm-tools-preview
+
 After that, run `cargo bootimage` to create a bootable disk image for this project.
