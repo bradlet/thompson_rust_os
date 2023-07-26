@@ -12,9 +12,12 @@ we define a target triple in `x86_64_os.json`.
 Note: This is also specified as the default for this repository, in `.cargo/config.toml`
 
 This crate also requires the nightly channel, because it needs to rebuild the `core` library
-crate for the custom target triple.
+crate for the custom target triple. We also need the rust source code available so that we
+can compile `core` ourselves.
 
 > rustup override set nightly
+
+> rustup component add rust-src
 
 We use the bootloader crate, which implements a basic BIOS bootloader for us, alongside
 `bootimage` which is provided by the blog creator to link our kernel to the bootloader
