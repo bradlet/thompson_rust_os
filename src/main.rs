@@ -9,6 +9,8 @@
 
 use core::panic::PanicInfo;
 
+mod vga_buffer;
+
 const VGA_BUFFER_ADDRESS: u32 = 0xb8000;
 const OS_WELCOME_MSG: &[u8] = b"Hello World!";
 
