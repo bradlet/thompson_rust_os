@@ -66,3 +66,14 @@
     -   Special memory area mapped to VGA hardware so that it's contents are displayed on the screen.
     -   Memory contains 25 lines, each 80 character cells wide, where each cell contains an ASCII character, and a byte for color.
     -   Buffer located at `0xb8000`
+
+# 3 - VGA Text Mode
+
+- 	To write characters to the screen in VGA Text Mode, just need to write data to the VGA buffer which is a 2d array.
+	-	Memory layout: bit 0-7 = ASCII character; 8-11 foreground color; 12-14 = background color; 15 = blink.
+	-	Apparently the ascii character isn't actually normal ASCII but a slightly altered character set called "code page 937"
+	- 	This uses [Memory Mapped I/O](https://en.wikipedia.org/wiki/Memory-mapped_I/O_and_port-mapped_I/O) as a way to allow
+		the CPU to communicate to peripheral devices.
+		-	I/O devices can monitor the memory location of the CPU's address bus and respond when the CPU accesses an address
+			assigned to that bus.
+		-	These reads and writes don't interact with RAM; directly access the text buffer on the VGA hardware.
