@@ -10,9 +10,9 @@
 use core::panic::PanicInfo;
 
 mod vga_buffer;
+use vga_buffer::{Color, ColorCode, Buffer, Writer};
 
 const VGA_BUFFER_ADDRESS: u32 = 0xb8000;
-const OS_WELCOME_MSG: &[u8] = b"Hello World!";
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
@@ -23,17 +23,16 @@ fn panic(_info: &PanicInfo) -> ! {
 /// - Throws linker error by default b/c program depends on C runtime. Build for bare metal to fix.
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    let vga_buffer = VGA_BUFFER_ADDRESS as *mut u8;
+	let mut writer = Writer {
+		column_position: 0,
+		color_code: ColorCode::new(Color::Black, Color::White),
+		buffer: unsafe { &mut *(VGA_BUFFER_ADDRESS as *mut Buffer) },
+	};
 
-    // Enumerate so we can get the index in the welcome msg byte string so that we can use `offset` to
-    // point to the region of memory in the VGA buffer that we want to write our string to.
-    for (i, &byte) in OS_WELCOME_MSG.iter().enumerate() {
-        // Need to wrap operations on the vga_buffer pointer in `unsafe` because rustc can't prove the raw ptr is valid.
-        unsafe {
-            *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
-        }
-    }
+	writer.write_str("Hello World!");
+
+	writer.write_byte(b'T');
+	writer.write_str("est! ~☺_☺~");
 
     loop {}
 }

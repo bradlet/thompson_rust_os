@@ -20,10 +20,10 @@ pub enum Color {
 /// 		for the struct; just the size of the u8.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
-struct ColorCode(u8);
+pub struct ColorCode(u8);
 
 impl ColorCode {
-	fn new(bg: Color, fg: Color) -> ColorCode {
+	pub fn new(bg: Color, fg: Color) -> ColorCode {
 		ColorCode((bg as u8) << 4 | (fg as u8))
 	}
 }
@@ -38,20 +38,20 @@ struct ScreenChar {
 }
 
 #[repr(transparent)]
-struct Buffer {
+pub struct Buffer {
     chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
 /// The public interface with which to interact with the our VGA driver.
 /// - Always writes to last line and shifts up if fill or when encountering '\n'.
 /// - Reference to VGA buffer needs to live for the entire program life: `'static`.
-pub struct Write {
-	column_position: usize,
-	color_code: ColorCode,
-	buffer: &'static mut Buffer,
+pub struct Writer {
+	pub column_position: usize,
+	pub color_code: ColorCode,
+	pub buffer: &'static mut Buffer,
 }
 
-impl Write {
+impl Writer {
 	fn eol(&self) -> bool {
 		self.column_position >= BUFFER_WIDTH
 	}
@@ -75,6 +75,18 @@ impl Write {
 			}
 		}
 	}
+
+	pub fn write_str(&mut self, s: &str) {
+        for byte in s.bytes() {
+            match byte {
+                // printable ASCII byte or newline
+                0x20..=0x7e | b'\n' => self.write_byte(byte),
+                // not part of printable ASCII range
+                _ => self.write_byte(0xfe),
+            }
+
+        }
+    }
 
 	fn new_line(&mut self) { }
 }
