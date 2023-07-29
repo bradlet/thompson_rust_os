@@ -9,7 +9,7 @@ const BUFFER_WIDTH: usize = 80;
 #[repr(u8)]
 pub enum Color {
     Black = 0,
-	White = 1,
+	White = 15,
 }
 
 /// A type used to wrap the foreground and background colors.
