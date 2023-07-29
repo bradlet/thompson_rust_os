@@ -1,6 +1,8 @@
 //! # VGA Display Driver
 //! Creating a module to wrap unsafe interactions with the VGA Text Buffer
 
+use volatile::Volatile;
+
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
 
@@ -37,9 +39,13 @@ struct ScreenChar {
     color_code: ColorCode,
 }
 
+/// Memory representation for our VGA buffer;
+/// Wrapped `ScreenChar` objects in Volatile so that more heavily-optimizing
+/// compilers don't clear the memory -- from the compiler's perspective, we
+/// don't access data, so it seems like we could clear memory at any time.
 #[repr(transparent)]
 pub struct Buffer {
-    chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
+    chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
 /// The public interface with which to interact with the our VGA driver.
