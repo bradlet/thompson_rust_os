@@ -6,3 +6,4 @@ authors = ["Bradley Thompson <bradlet2@pdx.edu>"]
 
 [dependencies]
 bootloader = "0.9.23"
+volatile = "0.2.6"

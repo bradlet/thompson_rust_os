@@ -29,7 +29,7 @@ pub extern "C" fn _start() -> ! {
 		buffer: unsafe { &mut *(VGA_BUFFER_ADDRESS as *mut Buffer) },
 	};
 
-	writer.write_str("Hello World!");
+	writer.write_str("Hello World!\n");
 
 	writer.write_byte(b'T');
 	writer.write_str("est! ~☺_☺~");
