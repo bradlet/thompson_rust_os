@@ -4,7 +4,7 @@
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
 
-// C-like enum for the sake of clarity
+// C-like enum so we can explicitly match the correct color value
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Color {
