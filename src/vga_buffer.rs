@@ -2,7 +2,9 @@
 //! Creating a module to wrap unsafe interactions with the VGA Text Buffer
 
 use volatile::Volatile;
+use core::{fmt, fmt::Write};
 
+const VGA_BUFFER_ADDRESS: u32 = 0xb8000;
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
 
@@ -84,7 +86,7 @@ impl Writer {
 		}
 	}
 
-	pub fn write_str(&mut self, s: &str) {
+	pub fn write_string(&mut self, s: &str) {
         for byte in s.bytes() {
             match byte {
                 // printable ASCII byte or newline
@@ -97,4 +99,21 @@ impl Writer {
     }
 
 	fn new_line(&mut self) { }
+}
+
+impl fmt::Write for Writer {
+	fn write_str(&mut self, s: &str) -> fmt::Result {
+		self.write_string(s);
+		Ok(())
+	}
+}
+
+pub fn write_ln(ln: &str) {
+	let mut writer = Writer {
+		column_position: 0,
+		color_code: ColorCode::new(Color::Black, Color::White),
+		buffer: unsafe { &mut *(VGA_BUFFER_ADDRESS as *mut Buffer) },
+	};
+
+	write!(writer, "Hello w☺rld!\n{}\n", ln);
 }

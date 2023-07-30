@@ -10,9 +10,6 @@
 use core::panic::PanicInfo;
 
 mod vga_buffer;
-use vga_buffer::{Color, ColorCode, Buffer, Writer};
-
-const VGA_BUFFER_ADDRESS: u32 = 0xb8000;
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
@@ -23,16 +20,7 @@ fn panic(_info: &PanicInfo) -> ! {
 /// - Throws linker error by default b/c program depends on C runtime. Build for bare metal to fix.
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-	let mut writer = Writer {
-		column_position: 0,
-		color_code: ColorCode::new(Color::Black, Color::White),
-		buffer: unsafe { &mut *(VGA_BUFFER_ADDRESS as *mut Buffer) },
-	};
-
-	writer.write_str("Hello World!\n");
-
-	writer.write_byte(b'T');
-	writer.write_str("est! ~☺_☺~");
+	vga_buffer::write_ln("Welcome!");
 
     loop {}
 }
