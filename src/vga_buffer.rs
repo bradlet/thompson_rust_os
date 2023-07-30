@@ -115,5 +115,5 @@ pub fn write_ln(ln: &str) {
 		buffer: unsafe { &mut *(VGA_BUFFER_ADDRESS as *mut Buffer) },
 	};
 
-	write!(writer, "Hello w☺rld!\n{}\n", ln);
+	write!(writer, "Hello w☺rld!\n{}\n", ln).unwrap();
 }
