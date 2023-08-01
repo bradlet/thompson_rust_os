@@ -146,6 +146,3 @@ impl fmt::Write for Writer {
 		Ok(())
 	}
 }
-
-pub fn write_ln(ln: &str) {
-}
