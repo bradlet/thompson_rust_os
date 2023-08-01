@@ -1,12 +1,24 @@
 //! # VGA Display Driver
 //! Creating a module to wrap unsafe interactions with the VGA Text Buffer
 
+use lazy_static::lazy_static;
+use spin::Mutex;
 use volatile::Volatile;
-use core::{fmt, fmt::Write};
+use core::fmt;
 
 const VGA_BUFFER_ADDRESS: u32 = 0xb8000;
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
+
+lazy_static! {
+	pub static ref WRITER: Mutex<Writer> = Mutex::new(
+		Writer {
+			column_position: 0,
+			color_code: ColorCode::new(Color::Black, Color::White),
+			buffer: unsafe { &mut *(VGA_BUFFER_ADDRESS as *mut Buffer) },
+		}
+	);
+}
 
 // C-like enum so we can explicitly match the correct color value
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -86,6 +98,10 @@ impl Writer {
 		}
 	}
 
+	/// Print any valid ASCII (technically 'code page 937') character.
+	/// Any characters outside of the valid range will have a square.
+	/// Any byte within a multi-byte UTF-8 character is not valid ASCII,
+	/// so some unicode characters will result in multiple square chars.
 	pub fn write_string(&mut self, s: &str) {
         for byte in s.bytes() {
             match byte {
@@ -98,7 +114,30 @@ impl Writer {
         }
     }
 
-	fn new_line(&mut self) { }
+	/// Shift all rows up 1  
+	fn new_line(&mut self) { 
+		for row in 1..BUFFER_HEIGHT {
+            for col in 0..BUFFER_WIDTH {
+                let character = self.buffer.chars[row][col].read();
+                self.buffer.chars[row - 1][col].write(character);
+            }
+        }
+        self.clear_row(BUFFER_HEIGHT - 1);
+        self.column_position = 0;
+	}
+
+	/// Replace target `row` with all empty space characters
+	fn clear_row(&mut self, row: usize) {
+		for col in 0..BUFFER_WIDTH {
+			self.buffer.chars[row][col].write(
+				ScreenChar {
+					ascii_character: b' ',
+					color_code: self.color_code
+				}
+			)
+		}
+	}
+
 }
 
 impl fmt::Write for Writer {
@@ -109,11 +148,4 @@ impl fmt::Write for Writer {
 }
 
 pub fn write_ln(ln: &str) {
-	let mut writer = Writer {
-		column_position: 0,
-		color_code: ColorCode::new(Color::Black, Color::White),
-		buffer: unsafe { &mut *(VGA_BUFFER_ADDRESS as *mut Buffer) },
-	};
-
-	write!(writer, "Hello w☺rld!\n{}\n", ln).unwrap();
 }
