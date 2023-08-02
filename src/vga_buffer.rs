@@ -10,6 +10,10 @@ const VGA_BUFFER_ADDRESS: u32 = 0xb8000;
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
 
+// Need to use this `lazy_static!` macro b/c Rust's const evaluator can't convert
+// the raw Buffer ptr to a ref at compile time (maybe it can with const fn's now?
+// unclear...). To make the static Writer mutable, we need to wrap it in simple
+// Mutex spinlock.
 lazy_static! {
 	pub static ref WRITER: Mutex<Writer> = Mutex::new(
 		Writer {
