@@ -150,3 +150,25 @@ impl fmt::Write for Writer {
 		Ok(())
 	}
 }
+
+/*
+Create our own declarative print & println macros which use the above `fmt::Write`
+impl instead of the Rust IO module's `_print` function. Only real diff is ours 
+writes to the VGA buffer instead of stdout...
+*/
+
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    WRITER.lock().write_fmt(args).unwrap();
+}
+
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! println {
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+}

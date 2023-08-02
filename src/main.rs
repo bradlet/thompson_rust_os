@@ -20,7 +20,6 @@ fn panic(_info: &PanicInfo) -> ! {
 /// - Throws linker error by default b/c program depends on C runtime. Build for bare metal to fix.
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-	use core::fmt::Write;
-	write!(vga_buffer::WRITER.lock(), "Hello w☺rld!\n{}\n", "Welcome!").unwrap();
+	println!("Hello {}!", "World");
     loop {}
 }
