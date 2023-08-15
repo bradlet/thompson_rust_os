@@ -6,3 +6,6 @@ build-std-features = ["compiler-builtins-mem"]
 # Set the default build target to our custom target triple so we don't need to specify on CLI
 [build]
 target = "x86_64_os.json"
+
+[target.'cfg(target_os = "none")']
+runner = "bootimage runner"
