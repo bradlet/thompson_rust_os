@@ -39,4 +39,8 @@ On MacOS:
 
 Now, assuming you've already ran `cargo bootimage`, you can boot up our kernel in a VM:
 
-> qemu-system-x86_64 -drive format=raw,file=target/x86_64_os/debug/bootimage-thompson_rust_os.bin  
+> qemu-system-x86_64 -drive format=raw,file=target/x86_64_os/debug/bootimage-thompson_rust_os.bin
+
+Or, more easily because of the runner specified in `./cargo/config.toml`:
+
+> cargo run
