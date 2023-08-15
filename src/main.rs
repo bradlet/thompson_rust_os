@@ -20,6 +20,7 @@ mod vga_buffer;
 
 // `tests` - slice of trait object references pointing at the 
 // [Fn()](https://doc.rust-lang.org/std/ops/trait.Fn.html) trait.
+// - All functions annotated with `#[test_case]` will have their reference passed here.
 #[cfg(test)]
 fn test_runner(tests: &[&dyn Fn()]) -> () {
     println!("Running {} tests", tests.len());
@@ -43,6 +44,19 @@ pub extern "C" fn _start() -> ! {
 	// Call the generated test main in test contexts
 	#[cfg(test)]
 	test_main();
-	
+
     loop {}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test_case]
+	fn a_test() {
+		print!("Some assertion...");
+		assert_eq!(1, 1);
+		println!("OK");
+	}
+
 }
