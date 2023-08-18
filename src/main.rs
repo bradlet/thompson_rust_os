@@ -27,8 +27,8 @@ const IOBASE_PORT: u16 = 0xf4;
 #[repr(u32)]
 pub enum QemuExitCode {
 	// Note: doesn't really matter, just shouldn't clash with QEMU's default codes
-    Success = 0b1010, 	// 10 TODO: Find out why this is sent as `21` instead of `10`
-    Failed = 0b1011, 	// 11
+    Success = 0b1010, 	// 21 after left bitwise shift and bitwise OR 1.
+    Failed = 0b1011, 	// 23 after ^
 }
 
 pub fn exit_qemu(exit_code: QemuExitCode) {
