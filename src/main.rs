@@ -26,8 +26,9 @@ const IOBASE_PORT: u16 = 0xf4;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
 pub enum QemuExitCode {
-    Success = 0x10,
-    Failed = 0x11,
+	// Note: doesn't really matter, just shouldn't clash with QEMU's default codes
+    Success = 0b1010, 	// 10 TODO: Find out why this is sent as `21` instead of `10`
+    Failed = 0b1011, 	// 11
 }
 
 pub fn exit_qemu(exit_code: QemuExitCode) {
@@ -48,6 +49,7 @@ fn test_runner(tests: &[&dyn Fn()]) -> () {
     for test in tests {
         test();
     }
+	exit_qemu(QemuExitCode::Success);
 }
 
 #[panic_handler]
