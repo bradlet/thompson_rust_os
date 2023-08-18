@@ -18,6 +18,27 @@ use core::panic::PanicInfo;
 
 mod vga_buffer;
 
+const IOBASE_PORT: u16 = 0xf4;
+
+// Wrap codes sent to QEMU's `isa-debug-exit` device for clarity;
+// Using port-mapped I/O to communicate that the kernel should quit when
+// we write one of these codes to the IOBASE_PORT.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u32)]
+pub enum QemuExitCode {
+    Success = 0x10,
+    Failed = 0x11,
+}
+
+pub fn exit_qemu(exit_code: QemuExitCode) {
+    use x86_64::instructions::port::Port;
+
+    unsafe {
+        let mut port = Port::new(IOBASE_PORT);
+        port.write(exit_code as u32);
+    }
+}
+
 // `tests` - slice of trait object references pointing at the 
 // [Fn()](https://doc.rust-lang.org/std/ops/trait.Fn.html) trait.
 // - All functions annotated with `#[test_case]` will have their reference passed here.
