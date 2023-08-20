@@ -55,9 +55,18 @@ fn test_runner(tests: &[&dyn Fn()]) -> () {
 	exit_qemu(QemuExitCode::Success);
 }
 
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
 	println!("Panic: {}", _info);
+    loop {}
+}
+
+#[cfg(test)]
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+	serial_println!("[failed]\n\nError: {}\n", _info);
+	exit_qemu(QemuExitCode::Failed);
     loop {}
 }
 
@@ -83,6 +92,13 @@ mod tests {
 		serial_print!("Some assertion...");
 		assert_eq!(1, 1);
 		serial_println!("OK");
+	}
+
+	#[test_case]
+	fn failing_test() {
+		// This is left in to demonstrate the panic_handler configured for test contexts
+		serial_print!("I bet 1 must equal 2 huh? Let's see...");
+		assert_eq!(1, 2);
 	}
 
 }
