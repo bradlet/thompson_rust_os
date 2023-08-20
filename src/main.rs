@@ -17,8 +17,11 @@
 use core::panic::PanicInfo;
 
 mod vga_buffer;
+mod serial;
 
+// Keeping all ports used for port-mapped I/O here.
 const IOBASE_PORT: u16 = 0xf4;
+const SERIAL_PORT: u16 = 0x3F8; // Standard port number for UART's first serial interface
 
 // Wrap codes sent to QEMU's `isa-debug-exit` device for clarity;
 // Using port-mapped I/O to communicate that the kernel should quit when
@@ -45,7 +48,7 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
 // - All functions annotated with `#[test_case]` will have their reference passed here.
 #[cfg(test)]
 fn test_runner(tests: &[&dyn Fn()]) -> () {
-    println!("Running {} tests", tests.len());
+    serial_println!("Running {} tests", tests.len());
     for test in tests {
         test();
     }
@@ -77,9 +80,9 @@ mod tests {
 
 	#[test_case]
 	fn a_test() {
-		print!("Some assertion...");
+		serial_print!("Some assertion...");
 		assert_eq!(1, 1);
-		println!("OK");
+		serial_println!("OK");
 	}
 
 }
