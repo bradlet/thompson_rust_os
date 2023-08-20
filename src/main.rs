@@ -43,14 +43,28 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
     }
 }
 
+// Trait used to make our tests have common behavior (e.g. Test starting and success msging)
+pub trait Testable {
+    fn run(&self) -> ();
+}
+
+impl <T: Fn()> Testable for T {
+	fn run(&self) -> () {
+		// `type_name` is implemented directly by the compiler
+		serial_print!("{}...\t", core::any::type_name::<T>());
+        self();
+        serial_println!("[ok]");	
+	}
+}
+
 // `tests` - slice of trait object references pointing at the 
 // [Fn()](https://doc.rust-lang.org/std/ops/trait.Fn.html) trait.
 // - All functions annotated with `#[test_case]` will have their reference passed here.
 #[cfg(test)]
-fn test_runner(tests: &[&dyn Fn()]) -> () {
+fn test_runner(tests: &[&dyn Testable]) -> () {
     serial_println!("Running {} tests", tests.len());
     for test in tests {
-        test();
+        test.run();
     }
 	exit_qemu(QemuExitCode::Success);
 }
@@ -85,19 +99,15 @@ pub extern "C" fn _start() -> ! {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
 
 	#[test_case]
 	fn a_test() {
-		serial_print!("Some assertion...");
 		assert_eq!(1, 1);
-		serial_println!("OK");
 	}
 
 	#[test_case]
 	fn failing_test() {
 		// This is left in to demonstrate the panic_handler configured for test contexts
-		serial_print!("I bet 1 must equal 2 huh? Let's see...");
 		assert_eq!(1, 2);
 	}
 
