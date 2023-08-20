@@ -105,10 +105,9 @@ mod tests {
 		assert_eq!(1, 1);
 	}
 
-	#[test_case]
-	fn failing_test() {
-		// This is left in to demonstrate the panic_handler configured for test contexts
-		assert_eq!(1, 2);
-	}
-
+	// Uncomment to see what a failing test looks liks:
+	// #[test_case]
+	// fn failing_test() {
+	// 	assert_eq!(1, 2);
+	// }
 }
