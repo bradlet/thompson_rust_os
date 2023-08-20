@@ -15,5 +15,9 @@ uart_16550 = "0.2.0"
 # Alter bootimage runner execution in test context; specify a port
 # that, when written to, causes QEMU to exit.
 [package.metadata.bootimage]
-test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04", "-serial", "stdio"]
+test-args = [
+	"-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
+	"-serial", "stdio",
+	"-display", "none"
+]
 test-success-exit-code = 21
