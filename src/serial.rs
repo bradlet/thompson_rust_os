@@ -10,7 +10,7 @@ use uart_16550::SerialPort;
 use spin::Mutex;
 use lazy_static::lazy_static;
 
-use crate::SERIAL_PORT;
+const SERIAL_PORT: u16 = 0x3F8; // Standard port number for UART's first serial interface
 
 lazy_static! {
     pub static ref SERIAL: Mutex<SerialPort> = {
