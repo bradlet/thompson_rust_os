@@ -77,3 +77,10 @@
 		-	I/O devices can monitor the memory location of the CPU's address bus and respond when the CPU accesses an address
 			assigned to that bus.
 		-	These reads and writes don't interact with RAM; directly access the text buffer on the VGA hardware.
+
+# 4 - Testing
+Didn't feel the need to take more notes than what's included in inline comments...
+
+# 5 - CPU Exceptions
+- We set up an "interrupt descriptor table" to map certain CPU exceptions to specific exception handlers.
+- [See the OS Dev Wiki for all ~20 CPU exceptions on x86](https://wiki.osdev.org/Exceptions)
