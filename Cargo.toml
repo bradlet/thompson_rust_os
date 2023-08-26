@@ -21,3 +21,8 @@ test-args = [
 	"-display", "none"
 ]
 test-success-exit-code = 21
+
+# Configure should_panic example test to not use a test harness.
+[[test]]
+name = "should_panic_example"
+harness = false
