@@ -33,6 +33,11 @@ fn panic(info: &PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
 	println!("Hello {}!", "World");
 
+	// Setup OS lib with Interrupt Descriptor Table registration
+	thompson_rust_os::init();
+
+	x86_64::instructions::interrupts::int3(); // Test breakpoint exception
+
 	// Call the generated test main in test contexts
 	#[cfg(test)]
 	test_main();

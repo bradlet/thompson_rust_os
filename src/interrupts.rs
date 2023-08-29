@@ -5,11 +5,22 @@
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 
 use crate::println;
+use lazy_static::lazy_static;
 
-/// Create a new IDT instance so that we can register our various
-/// exception handlers.
+lazy_static! {
+	/// The IDT needs to live for the life of the program b/c an exception
+	/// can occur at any point. Issue: We need to use runtime logic to
+	/// mutate the IDT. So, we use `lazy_static!` to handle what would
+	/// otherwise be `unsafe` operations lazily at first access.
+	static ref IDT: InterruptDescriptorTable = {
+		let mut idt = InterruptDescriptorTable::new();
+		idt.breakpoint.set_handler_fn(breakpoint_handler);
+		idt
+	};
+}
+
 pub fn init_idt() {
-    let mut idt = InterruptDescriptorTable::new();
+	IDT.load()
 }
 
 /// Breakpoint exceptions are solely used to pause a program when the

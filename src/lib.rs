@@ -19,6 +19,13 @@ pub mod interrupts;
 
 const IOBASE_PORT: u16 = 0xf4;
 
+/// Surface `interrupts` mod's IDT initializer for convenience /
+/// to obviate the need for consumers of this lib to import the
+/// interrupts module.
+pub fn init() {
+	interrupts::init_idt();
+}
+
 // Wrap codes sent to QEMU's `isa-debug-exit` device for clarity;
 // Using port-mapped I/O to communicate that the kernel should quit when
 // we write one of these codes to the IOBASE_PORT.
