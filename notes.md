@@ -69,18 +69,85 @@
 
 # 3 - VGA Text Mode
 
-- 	To write characters to the screen in VGA Text Mode, just need to write data to the VGA buffer which is a 2d array.
-	-	Memory layout: bit 0-7 = ASCII character; 8-11 foreground color; 12-14 = background color; 15 = blink.
-	-	Apparently the ascii character isn't actually normal ASCII but a slightly altered character set called "code page 937"
-	- 	This uses [Memory Mapped I/O](https://en.wikipedia.org/wiki/Memory-mapped_I/O_and_port-mapped_I/O) as a way to allow
-		the CPU to communicate to peripheral devices.
-		-	I/O devices can monitor the memory location of the CPU's address bus and respond when the CPU accesses an address
-			assigned to that bus.
-		-	These reads and writes don't interact with RAM; directly access the text buffer on the VGA hardware.
+-                         To write characters to the screen in VGA Text Mode, just need to write data to the VGA buffer which is a 2d array.
+    -   Memory layout: bit 0-7 = ASCII character; 8-11 foreground color; 12-14 = background color; 15 = blink.
+    -   Apparently the ascii character isn't actually normal ASCII but a slightly altered character set called "code page 937"
+    -                         This uses [Memory Mapped I/O](https://en.wikipedia.org/wiki/Memory-mapped_I/O_and_port-mapped_I/O) as a way to allow
+        the CPU to communicate to peripheral devices.
+        -   I/O devices can monitor the memory location of the CPU's address bus and respond when the CPU accesses an address
+            assigned to that bus.
+        -   These reads and writes don't interact with RAM; directly access the text buffer on the VGA hardware.
 
 # 4 - Testing
+
 Didn't feel the need to take more notes than what's included in inline comments...
 
 # 5 - CPU Exceptions
-- We set up an "interrupt descriptor table" to map certain CPU exceptions to specific exception handlers.
-- [See the OS Dev Wiki for all ~20 CPU exceptions on x86](https://wiki.osdev.org/Exceptions)
+
+-   We set up an "interrupt descriptor table" to map certain CPU exceptions to specific exception handlers.
+-   [See the OS Dev Wiki for all ~20 CPU exceptions on x86](https://wiki.osdev.org/Exceptions). Some examples...
+    -   Page Fault: Illegal memory access; e.g. reading from unmapped memory, writing to read-only memory.
+    -   Invalid opcode: unsupported instruction encountered by the CPU
+    -   General Protection Fault: Many causes; e.g. executing a privileged instruction in user space, writing reserved fields
+        in configuration registers.
+    -                     Double Fault: When handling an exception, if there is an exception thrown during the exception handler's execution, CPU
+        raises a double fault exception.
+    -   Triple Fault: If an exception occurs while the CPU tries to call the double fault handler, it issues a triple fault,
+        which typically results in a system restart.
+
+---
+
+## Interrupt Descriptor Tables
+
+Hardware interacts with this directly, so we have to create it following a specific preset format. Following 16 byte structure:
+
+-   u16 --> Function Pointer: Pointer to handler function (lower bits)
+-   u16 --> GDT Selector selector for code segement in [Global Descriptor Table](https://en.wikipedia.org/wiki/Global_Descriptor_Table)
+-   u16 --> Options
+-   u16 --> Function pointer (middle bits)
+-   u32 --> Function pointer (remaining)
+-   u32 --> Reserved
+
+---
+
+When an exception occurs the CPU:
+
+1. Push some registers onto the stack (e.g. instruction ptr)
+2. Read a corresponding entry from the IDT
+3. Check if the entry is present, if not, raise double fault.
+4. "Disable hardware interrupts if the entry is an interrupt gate" - ?
+5. Load the Global Descriptor Table selector into the code segment.
+6. Jump to the handler function pointed to by the IDT.
+
+-   `HandlerFunc` in Rust is a type alias for an
+
+```
+extern "x86_interrupt" fn
+```
+
+-   `extern keyword` defines a function with a foreign calling convention.
+    -   Often used for C code w/ `extern "C" fn`.
+        -   **C calling convention** (spec'd in [System V ABI](https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf)):
+            -   The first six integer arguments are passed in registers rdi, rsi, rdx, rcx, r8, r9
+            -   Additional arguments are passed on the stack
+            -   Results are returned in rax and rdx
+-   Commonly this convention splits registers into preserved and scratch.
+    -   Preserved registers are saved to the stack at the beginning of the
+        function, and then restored when the function finishes execution.
+    -   Scratch registers (caller-saved) can be overwritten, so to save them the invoker of the
+        function needs to push these values to the stack and restore them manually.
+-   Interrupt calling convention is similar to regular fn convention, but
+    regular functions is invoked voluntarily a compiler-inserted `call` instruction.
+    -   Interrupt exception can occur on any instruction. Compilers can't know if an instruction will cause
+        a stack overflow or page fault.
+    -   Since exceptions happen at any time, we can't backup registers before they occur.
+    -   So we can't use a calling convention that relies on caller-saved registers -- we need one that
+        saves all registers.
+    -   "x86-interrupt" calling convention backs up all registers overwritten by the function (Doesn't
+        mean it is saved on the stack).
+	-	Read through [this part on the interrupt stack frame again](https://os.phil-opp.com/cpu-exceptions/#the-interrupt-stack-frame)
+- x86-interrupt convention handles a lot of the minutia of exception handling
+	-	Doesn't retrieve arguments from the stack, always retrieves them from the stack at some offset.
+	-	Handles a special return since exception handler stack frames differs from normal functions: `iretq` instead of `ret`
+	-	Handles the optional error code that some exceptions include.
+	-	Handles stack reallignment in-case of byte boundary disparities (16-byte alignment expected in some instructions).
