@@ -69,10 +69,10 @@
 
 # 3 - VGA Text Mode
 
--                                   To write characters to the screen in VGA Text Mode, just need to write data to the VGA buffer which is a 2d array.
+-                                     To write characters to the screen in VGA Text Mode, just need to write data to the VGA buffer which is a 2d array.
     -   Memory layout: bit 0-7 = ASCII character; 8-11 foreground color; 12-14 = background color; 15 = blink.
     -   Apparently the ascii character isn't actually normal ASCII but a slightly altered character set called "code page 937"
-    -                                   This uses [Memory Mapped I/O](https://en.wikipedia.org/wiki/Memory-mapped_I/O_and_port-mapped_I/O) as a way to allow
+    -                                     This uses [Memory Mapped I/O](https://en.wikipedia.org/wiki/Memory-mapped_I/O_and_port-mapped_I/O) as a way to allow
         the CPU to communicate to peripheral devices.
         -   I/O devices can monitor the memory location of the CPU's address bus and respond when the CPU accesses an address
             assigned to that bus.
@@ -90,7 +90,7 @@ Didn't feel the need to take more notes than what's included in inline comments.
     -   Invalid opcode: unsupported instruction encountered by the CPU
     -   General Protection Fault: Many causes; e.g. executing a privileged instruction in user space, writing reserved fields
         in configuration registers.
-    -                               Double Fault: When handling an exception, if there is an exception thrown during the exception handler's execution, CPU
+    -                                 Double Fault: When handling an exception, if there is an exception thrown during the exception handler's execution, CPU
         raises a double fault exception.
     -   Triple Fault: If an exception occurs while the CPU tries to call the double fault handler, it issues a triple fault,
         which typically results in a system restart.
@@ -159,6 +159,7 @@ extern "x86_interrupt" fn
 -   Occur when the CPU fails to invoke an exception handler.
     -   Because one is not registered, or otherwise fails to execute.
 -   Important to handle these to avoid triple faults, resulting in an automatic system reset.
+-   In x86_64, double fault handlers are diverging; no return value permitted.
 -   Example shows us writing to an invalid address -- since the address isn't mapped to a
     physical address in the CPU's page tables, a page fault occurs. If unhandled this results
     in a double fault.
