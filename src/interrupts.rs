@@ -7,6 +7,8 @@ use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 use crate::println;
 use lazy_static::lazy_static;
 
+// Note to self: See [ref](https://doc.rust-lang.org/std/keyword.ref.html) docs
+// for a bit more understanding on this macro.
 lazy_static! {
 	/// The IDT needs to live for the life of the program b/c an exception
 	/// can occur at any point. Issue: We need to use runtime logic to

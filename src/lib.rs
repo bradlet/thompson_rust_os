@@ -16,6 +16,7 @@ use core::panic::PanicInfo;
 pub mod vga_buffer;
 pub mod serial;
 pub mod interrupts;
+pub mod gdt;
 
 const IOBASE_PORT: u16 = 0xf4;
 
@@ -23,6 +24,7 @@ const IOBASE_PORT: u16 = 0xf4;
 /// to obviate the need for consumers of this lib to import the
 /// interrupts module.
 pub fn init() {
+	gdt::init();
 	interrupts::init_idt();
 }
 
