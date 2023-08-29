@@ -28,3 +28,13 @@ pub fn init_idt() {
 extern "x86-interrupt" fn breakpoint_handler(isf: InterruptStackFrame) {
 	println!("{:#?}", isf);
 }
+
+#[cfg(test)]
+mod tests {
+
+	#[test_case]
+	fn test_breakpoint_exception_handler() {
+		// Our breakpoint handler should run and then execution should continue
+		x86_64::instructions::interrupts::int3();
+	}
+}
