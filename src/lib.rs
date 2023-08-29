@@ -3,8 +3,9 @@
 
 #![no_std]
 #![cfg_attr(test, no_main)]
-// Enable custom test framework because the default `test` crate requires the std lib.
-#![feature(custom_test_frameworks)]
+// 1. Enable custom test framework because the default `test` crate requires the std lib.
+// 2. Enable the x86_interrupt calling convention for exception handling (see interrupts.rs)
+#![feature(custom_test_frameworks, abi_x86_interrupt)]
 // This generates a main function that calls `test_runner`, but we configured no_main.
 #![test_runner(crate::test_runner)]
 // This is needed to change the name of the generated main function...
@@ -14,6 +15,7 @@ use core::panic::PanicInfo;
 
 pub mod vga_buffer;
 pub mod serial;
+pub mod interrupts;
 
 const IOBASE_PORT: u16 = 0xf4;
 
