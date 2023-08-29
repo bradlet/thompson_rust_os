@@ -30,3 +30,7 @@ harness = false
 [[test]]
 name = "should_panic_on_double_fault"
 harness = false
+
+[[test]]
+name = "stack_overflow"
+harness = false
