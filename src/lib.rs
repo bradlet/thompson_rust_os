@@ -26,6 +26,10 @@ const IOBASE_PORT: u16 = 0xf4;
 pub fn init() {
 	gdt::init();
 	interrupts::init_idt();
+	// Initialize our interrupt controllers
+	unsafe { interrupts::PICS.lock().initialize() };
+	// Enable interrupts in the CPU configuration using the `sti` instruction
+	x86_64::instructions::interrupts::enable(); 
 }
 
 // Wrap codes sent to QEMU's `isa-debug-exit` device for clarity;

@@ -1,11 +1,27 @@
 //! interrupts.rs
 //! Module that handles CPU Exceptions supported by types from
-//! the `x86-64` crate.
+//! the `x86-64` crate, and interrupts sent to the Intel 8259 
+//! chained Programmable Interrupt Controller interface.
 
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
-
+use pic8259::ChainedPics;
+use spin;
 use crate::{println, gdt};
 use lazy_static::lazy_static;
+
+/// Intel 8259 has two PIC's; these need to be at a higher interrupt vector
+/// value b/c lower values are used by other interrupts, like CPU exceptions.
+pub const PIC_1_OFFSET: u8 = 32;
+/// There are two PIC's in Intel 8259, the second feeds into one of PIC_1's
+/// input interrupt lines, and then PIC_1 communicates with the CPU.
+pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
+
+pub static PICS: spin::Mutex<ChainedPics> = spin::Mutex::new(
+	unsafe {
+		// ChainedPics::new is unsafe b/c bad offsets can yield undefined behavior.
+		ChainedPics::new(PIC_1_OFFSET, PIC_2_OFFSET)
+	}
+);
 
 // Note to self: See [ref](https://doc.rust-lang.org/std/keyword.ref.html) docs
 // for a bit more understanding on this macro.

@@ -11,6 +11,7 @@ spin = "0.5.2"
 lazy_static = { version = "1.0", features = ["spin_no_std"] }
 x86_64 = "0.14.2"
 uart_16550 = "0.2.0"
+pic8259 = "0.10.1"
 
 # Alter bootimage runner execution in test context; specify a port
 # that, when written to, causes QEMU to exit.
