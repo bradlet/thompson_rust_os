@@ -211,3 +211,16 @@ pub extern "C" fn _start() -> ! {
 -	The Interrupt Stack Table is held in the [Task State Segment](https://en.wikipedia.org/wiki/Task_state_segment)
 	which used to do things (e.g. hardware context switching) but now just holds
 	onto some addresses essentially.
+
+# 7 - Hardware Interrupts
+-	How hardware such as the keyboard can notify the CPU without the CPU needing
+	to poll.
+-	Can't connect all directly to the CPU; a separate "Interrupt Controller"
+	aggregates interrupts from all devices before notifying the CPU.
+-	Interrupt controllers are programmable, can have multiple priority levels so
+	timer interrupts have precedence over keyboard interrupts.
+-	Hardware interrupts handled asynchronously.
+-	Our PIC (Programmable Interrupt Controller) will use the 
+	[Intel 8259 PIC](https://en.wikipedia.org/wiki/Intel_8259),
+	replaced by [APIC](https://en.wikipedia.org/wiki/Intel_APIC_Architecture).
+-	See [osdev article on Intel 8259](https://wiki.osdev.org/8259_PIC)
