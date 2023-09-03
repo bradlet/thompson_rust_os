@@ -6,7 +6,7 @@
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 use pic8259::ChainedPics;
 use spin;
-use crate::{println, gdt};
+use crate::{print, println, gdt};
 use lazy_static::lazy_static;
 
 /// Intel 8259 has two PIC's; these need to be at a higher interrupt vector
@@ -23,6 +23,21 @@ pub static PICS: spin::Mutex<ChainedPics> = spin::Mutex::new(
 	}
 );
 
+/// Define the different hardware interrupt values, starting from the PIC_1_OFFSET
+/// which is high enough to leave room for CPU exceptions and other types of
+/// interrupts.
+#[derive(Debug, Clone, Copy)]
+#[repr(u8)]
+pub enum InterruptIndex {
+    Timer = PIC_1_OFFSET,
+}
+
+impl InterruptIndex {
+    fn as_usize(self) -> usize {
+        usize::from(self as u8)
+    }
+}
+
 // Note to self: See [ref](https://doc.rust-lang.org/std/keyword.ref.html) docs
 // for a bit more understanding on this macro.
 lazy_static! {
@@ -38,6 +53,8 @@ lazy_static! {
 				.set_handler_fn(double_fault_handler)
 				.set_stack_index(gdt::DOUBLE_FAULT_IST_INDEX); // unsafe
 		}
+		idt[InterruptIndex::Timer.as_usize()]	
+			.set_handler_fn(timer_interrupt_handler);
 		idt
 	};
 }
@@ -58,6 +75,20 @@ extern "x86-interrupt" fn double_fault_handler(
 	_: u64 // Error code is always 0, not needed.
 ) -> ! {
 	panic!("EXCEPTION: DOUBLE FAULT\n{:#?}", isf);
+}
+
+/// Sent every time the Programmable Interval Timer periodically ticks.
+extern "x86-interrupt" fn timer_interrupt_handler(
+    _stack_frame: InterruptStackFrame)
+{
+    print!(".");
+	// Need to send an EOI signal to let CPU know the handling of the
+	// last interrupts is complete.
+	unsafe {
+        PICS.lock().notify_end_of_interrupt(
+			InterruptIndex::Timer as u8
+		);
+    }
 }
 
 #[cfg(test)]

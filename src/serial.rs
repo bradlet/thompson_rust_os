@@ -25,8 +25,12 @@ lazy_static! {
 // I don't hide this from docs like the tutorial does b/c this is all just for learning/reference
 pub fn _print(args: ::core::fmt::Arguments) {
     use core::fmt::Write;
-	// `SerialPort` implements the `fmt::Write` trait
-    SERIAL.lock().write_fmt(args).expect("Printing to serial failed");
+	use x86_64::instructions::interrupts;
+
+	interrupts::without_interrupts(|| {
+		// `SerialPort` implements the `fmt::Write` trait
+		SERIAL.lock().write_fmt(args).expect("Printing to serial failed");
+	});
 }
 
 /// Prints to the host through the serial interface.
