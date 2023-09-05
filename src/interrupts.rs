@@ -15,6 +15,9 @@ pub const PIC_1_OFFSET: u8 = 32;
 /// There are two PIC's in Intel 8259, the second feeds into one of PIC_1's
 /// input interrupt lines, and then PIC_1 communicates with the CPU.
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
+/// Port that we read keyboard scancodes on -- must be read before handling
+/// another keyboard interrupt.
+pub const PS2_CONTROLLER_IO_PORT: u16 = 0x60;
 
 pub static PICS: spin::Mutex<ChainedPics> = spin::Mutex::new(unsafe {
     // ChainedPics::new is unsafe b/c bad offsets can yield undefined behavior.
@@ -28,6 +31,7 @@ pub static PICS: spin::Mutex<ChainedPics> = spin::Mutex::new(unsafe {
 #[repr(u8)]
 pub enum InterruptIndex {
     Timer = PIC_1_OFFSET,
+	Keyboard, // Defaults to previous + 1
 }
 
 impl InterruptIndex {
@@ -53,6 +57,8 @@ lazy_static! {
         }
         idt[InterruptIndex::Timer.as_usize()]
             .set_handler_fn(timer_interrupt_handler);
+		idt[InterruptIndex::Keyboard.as_usize()]
+			.set_handler_fn(keyboard_interrupt_handler);
         idt
     };
 }
@@ -84,6 +90,42 @@ extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFr
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Timer as u8);
     }
+}
+
+/// Handler for any keyboard interrupt.
+/// We read the scancode, which uses the scancode set 1, 
+/// ["IBM XT"](https://en.wikipedia.org/wiki/IBM_Personal_Computer_XT).
+extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStackFrame){
+	use pc_keyboard::{layouts::Us104Key, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
+	use spin::Mutex;
+	use x86_64::instructions::port::Port;
+
+	lazy_static! {
+        static ref KEYBOARD: Mutex<Keyboard<Us104Key, ScancodeSet1>> =
+            Mutex::new(
+				Keyboard::new(
+					Us104Key, ScancodeSet1, HandleControl::Ignore
+				)
+            );
+    }
+
+	let mut keyboard = KEYBOARD.lock();
+	let mut port = Port::new(PS2_CONTROLLER_IO_PORT);
+
+	let scancode: u8 = unsafe { port.read() };
+	if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
+        if let Some(key) = keyboard.process_keyevent(key_event) {
+            match key {
+                DecodedKey::Unicode(character) => print!("{}", character),
+                DecodedKey::RawKey(key) => print!("{:?}", key),
+            }
+        }
+    }
+
+	unsafe {
+		PICS.lock()
+			.notify_end_of_interrupt(InterruptIndex::Keyboard as u8);
+	}
 }
 
 #[cfg(test)]
