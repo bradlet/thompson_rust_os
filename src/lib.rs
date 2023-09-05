@@ -13,10 +13,10 @@
 
 use core::panic::PanicInfo;
 
-pub mod vga_buffer;
-pub mod serial;
-pub mod interrupts;
 pub mod gdt;
+pub mod interrupts;
+pub mod serial;
+pub mod vga_buffer;
 
 const IOBASE_PORT: u16 = 0xf4;
 
@@ -24,12 +24,21 @@ const IOBASE_PORT: u16 = 0xf4;
 /// to obviate the need for consumers of this lib to import the
 /// interrupts module.
 pub fn init() {
-	gdt::init();
-	interrupts::init_idt();
-	// Initialize our interrupt controllers
-	unsafe { interrupts::PICS.lock().initialize() };
-	// Enable interrupts in the CPU configuration using the `sti` instruction
-	x86_64::instructions::interrupts::enable(); 
+    gdt::init();
+    interrupts::init_idt();
+    // Initialize our interrupt controllers
+    unsafe { interrupts::PICS.lock().initialize() };
+    // Enable interrupts in the CPU configuration using the `sti` instruction
+    x86_64::instructions::interrupts::enable();
+}
+
+/// Uses `instructions::hlt` -- A thin wrapper over hlt in assembly --
+/// to pause the CPU inbetween interrupts so that we aren't being
+/// enrgy inefficient.
+pub fn hlt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
 }
 
 // Wrap codes sent to QEMU's `isa-debug-exit` device for clarity;
@@ -38,9 +47,9 @@ pub fn init() {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
 pub enum QemuExitCode {
-	// Note: doesn't really matter, just shouldn't clash with QEMU's default codes
-    Success = 0b1010, 	// 21 after left bitwise shift and bitwise OR 1.
-    Failed = 0b1011, 	// 23 after ^
+    // Note: doesn't really matter, just shouldn't clash with QEMU's default codes
+    Success = 0b1010, // 21 after left bitwise shift and bitwise OR 1.
+    Failed = 0b1011,  // 23 after ^
 }
 
 pub fn exit_qemu(exit_code: QemuExitCode) {
@@ -57,16 +66,16 @@ pub trait Testable {
     fn run(&self) -> ();
 }
 
-impl <T: Fn()> Testable for T {
-	fn run(&self) -> () {
-		// `type_name` is implemented directly by the compiler
-		serial_print!("{}...\t", core::any::type_name::<T>());
+impl<T: Fn()> Testable for T {
+    fn run(&self) -> () {
+        // `type_name` is implemented directly by the compiler
+        serial_print!("{}...\t", core::any::type_name::<T>());
         self();
-        serial_println!("[ok]");	
-	}
+        serial_println!("[ok]");
+    }
 }
 
-// `tests` - slice of trait object references pointing at the 
+// `tests` - slice of trait object references pointing at the
 // [Fn()](https://doc.rust-lang.org/std/ops/trait.Fn.html) trait.
 // - All functions annotated with `#[test_case]` will have their reference passed here.
 pub fn test_runner(tests: &[&dyn Testable]) -> () {
@@ -74,27 +83,26 @@ pub fn test_runner(tests: &[&dyn Testable]) -> () {
     for test in tests {
         test.run();
     }
-	exit_qemu(QemuExitCode::Success);
+    exit_qemu(QemuExitCode::Success);
 }
 
-
 pub fn test_panic_handler(_info: &PanicInfo) -> ! {
-	serial_println!("[failed]\n\nError: {}\n", _info);
-	exit_qemu(QemuExitCode::Failed);
+    serial_println!("[failed]\n\nError: {}\n", _info);
+    exit_qemu(QemuExitCode::Failed);
     loop {}
 }
 
 #[cfg(test)]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-	test_panic_handler(_info)
+    test_panic_handler(_info)
 }
 
 /// Entry point for `cargo test`
 #[cfg(test)]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-	init();
+    init();
     test_main();
     loop {}
 }

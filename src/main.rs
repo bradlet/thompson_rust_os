@@ -6,7 +6,6 @@
 // Tell the Rust compiler that we don't want to use the normal entrypoint
 // chain with crt0.
 #![no_main]
-
 #![feature(custom_test_frameworks)]
 #![test_runner(thompson_rust_os::test_runner)]
 #![reexport_test_harness_main = "test_main"]
@@ -17,7 +16,7 @@ use thompson_rust_os::println;
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-	println!("Panic: {}", _info);
+    println!("Panic: {}", _info);
     loop {}
 }
 
@@ -31,14 +30,14 @@ fn panic(info: &PanicInfo) -> ! {
 /// - Throws linker error by default b/c program depends on C runtime. Build for bare metal to fix.
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-	println!("Hello {}!", "World");
+    println!("Hello {}!", "World");
 
-	// Setup OS lib with Interrupt Descriptor Table registration
-	thompson_rust_os::init();
+    // Setup OS lib with Interrupt Descriptor Table registration
+    thompson_rust_os::init();
 
-	// Call the generated test main in test contexts
-	#[cfg(test)]
-	test_main();
+    // Call the generated test main in test contexts
+    #[cfg(test)]
+    test_main();
 
     loop {}
 }
@@ -46,14 +45,14 @@ pub extern "C" fn _start() -> ! {
 #[cfg(test)]
 mod tests {
 
-	#[test_case]
-	fn a_test() {
-		assert_eq!(1, 1);
-	}
+    #[test_case]
+    fn a_test() {
+        assert_eq!(1, 1);
+    }
 
-	// Uncomment to see what a failing test looks liks:
-	// #[test_case]
-	// fn failing_test() {
-	// 	assert_eq!(1, 2);
-	// }
+    // Uncomment to see what a failing test looks liks:
+    // #[test_case]
+    // fn failing_test() {
+    // 	assert_eq!(1, 2);
+    // }
 }

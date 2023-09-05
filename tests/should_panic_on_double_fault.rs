@@ -15,7 +15,7 @@ pub extern "C" fn _start() -> ! {
 
     serial_println!("[failed]");
     exit_qemu(QemuExitCode::Failed);
-    loop{}
+    loop {}
 }
 
 #[panic_handler]

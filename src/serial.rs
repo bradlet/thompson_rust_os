@@ -2,13 +2,13 @@
 //! This module implements interactions with the serial port. This is a simple way
 //! to communicate information from QEMU, running our kernel, back to the host
 //! stdout (or any other part of its file system).
-//! 
+//!
 //! This module's print macros should be used in test contexts to report state to
 //! the host machine.
 
-use uart_16550::SerialPort;
-use spin::Mutex;
 use lazy_static::lazy_static;
+use spin::Mutex;
+use uart_16550::SerialPort;
 
 const SERIAL_PORT: u16 = 0x3F8; // Standard port number for UART's first serial interface
 
@@ -25,12 +25,15 @@ lazy_static! {
 // I don't hide this from docs like the tutorial does b/c this is all just for learning/reference
 pub fn _print(args: ::core::fmt::Arguments) {
     use core::fmt::Write;
-	use x86_64::instructions::interrupts;
+    use x86_64::instructions::interrupts;
 
-	interrupts::without_interrupts(|| {
-		// `SerialPort` implements the `fmt::Write` trait
-		SERIAL.lock().write_fmt(args).expect("Printing to serial failed");
-	});
+    interrupts::without_interrupts(|| {
+        // `SerialPort` implements the `fmt::Write` trait
+        SERIAL
+            .lock()
+            .write_fmt(args)
+            .expect("Printing to serial failed");
+    });
 }
 
 /// Prints to the host through the serial interface.

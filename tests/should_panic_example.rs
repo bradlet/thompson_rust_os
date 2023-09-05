@@ -2,7 +2,7 @@
 //! This is an example for an integration test that can confirm some panic occurred
 //! in the test. We can only run a single test case given this method, so we can
 //! disable the test harness and avoid the need for a test runner.
-//! 
+//!
 //! See `Cargo.toml` for test harness disabling config...
 
 #![no_std]
@@ -16,7 +16,7 @@ pub extern "C" fn _start() -> ! {
     should_fail();
     serial_println!("[failed]");
     exit_qemu(QemuExitCode::Failed);
-    loop{}
+    loop {}
 }
 
 fn should_fail() {

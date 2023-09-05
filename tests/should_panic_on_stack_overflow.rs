@@ -6,10 +6,10 @@
 #![no_main]
 #![feature(abi_x86_interrupt)]
 
-use lazy_static::lazy_static;
 use core::panic::PanicInfo;
-use x86_64::structures::idt::{InterruptStackFrame, InterruptDescriptorTable};
-use thompson_rust_os::{exit_qemu, serial_print, serial_println, QemuExitCode, gdt};
+use lazy_static::lazy_static;
+use thompson_rust_os::{exit_qemu, gdt, serial_print, serial_println, QemuExitCode};
+use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 
 extern "x86-interrupt" fn test_double_fault_handler(
     _stack_frame: InterruptStackFrame,
@@ -55,7 +55,7 @@ pub extern "C" fn _start() -> ! {
 #[allow(unconditional_recursion)]
 fn stack_overflow() {
     stack_overflow();
-	// prevent tail recursion optimizations; rustc does this by default!?
+    // prevent tail recursion optimizations; rustc does this by default!?
     volatile::Volatile::new(0).read();
 }
 
