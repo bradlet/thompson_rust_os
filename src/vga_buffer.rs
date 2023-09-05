@@ -195,25 +195,37 @@ mod tests {
 
 	#[test_case]
 	fn test_println_output() {
+		use x86_64::instructions::interrupts;
+		use core::fmt::Write;
+
 		let s = "Test string";
-		println!("{}", s);
-		for (i, c) in s.chars().enumerate() {
-			// BUFFER_HEIGHT - 2 because after println the newline causes the last line to 'shift up'.
-			let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
-			assert_eq!(char::from(screen_char.ascii_character), c);
-		}
+
+		interrupts::without_interrupts(|| {
+			let mut writer = WRITER.lock();
+			writeln!(writer, "\n{}", s).expect("writeln failed");
+			for (i, c) in s.chars().enumerate() {
+				// BUFFER_HEIGHT - 2 because after println the newline causes the last line to 'shift up'.
+				let screen_char = writer.buffer.chars[BUFFER_HEIGHT - 2][i].read();
+				assert_eq!(char::from(screen_char.ascii_character), c);
+			}
+		});
 	}
 
 	#[test_case]
 	fn test_line_wrapped_at_buffer_width() {
+		use x86_64::instructions::interrupts;
+
 		let s = "Test a long string that should be wrapped at BUFFER_WIDTH characters..........80separate line!";
 		println!("{}", s);
-		for (i, c) in s.chars().enumerate() {
-			// If we are past col 80, a newline should have been inserted.
-			let row = if i < 80 { BUFFER_HEIGHT - 3 } else { BUFFER_HEIGHT - 2 };
-			let col = if i >= 80 { i - 80 } else { i };
-			let screen_char = WRITER.lock().buffer.chars[row][col].read();
-			assert_eq!(char::from(screen_char.ascii_character), c);
-		}
+
+		interrupts::without_interrupts(|| {
+			for (i, c) in s.chars().enumerate() {
+				// If we are past col 80, a newline should have been inserted.
+				let row = if i < 80 { BUFFER_HEIGHT - 3 } else { BUFFER_HEIGHT - 2 };
+				let col = if i >= 80 { i - 80 } else { i };
+				let screen_char = WRITER.lock().buffer.chars[row][col].read();
+				assert_eq!(char::from(screen_char.ascii_character), c);
+			}
+		});
 	}
 }
