@@ -174,6 +174,7 @@ macro_rules! println {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use core::fmt::Write;
 
     #[test_case]
     fn test_println_runs() {
@@ -189,7 +190,6 @@ mod tests {
 
     #[test_case]
     fn test_println_output() {
-        use core::fmt::Write;
         use x86_64::instructions::interrupts;
 
         let s = "Test string";
@@ -210,9 +210,10 @@ mod tests {
         use x86_64::instructions::interrupts;
 
         let s = "Test a long string that should be wrapped at BUFFER_WIDTH characters..........80separate line!";
-        println!("{}", s);
 
         interrupts::without_interrupts(|| {
+            let mut writer = WRITER.lock();
+            writeln!(writer, "\n{}", s).expect("writeln failed");
             for (i, c) in s.chars().enumerate() {
                 // If we are past col 80, a newline should have been inserted.
                 let row = if i < 80 {
@@ -221,7 +222,7 @@ mod tests {
                     BUFFER_HEIGHT - 2
                 };
                 let col = if i >= 80 { i - 80 } else { i };
-                let screen_char = WRITER.lock().buffer.chars[row][col].read();
+                let screen_char = writer.buffer.chars[row][col].read();
                 assert_eq!(char::from(screen_char.ascii_character), c);
             }
         });
