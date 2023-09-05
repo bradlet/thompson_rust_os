@@ -35,8 +35,7 @@ lazy_static! {
 
             // This needs to be unsafe b/c of the static mut access.
             let stack_start = VirtAddr::from_ptr(unsafe { &STACK });
-            let stack_end = stack_start + STACK_SIZE;
-            stack_end
+            stack_start + STACK_SIZE
         };
         tss
     };

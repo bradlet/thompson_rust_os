@@ -35,7 +35,7 @@ pub enum Color {
 /// we need to use bitwise operations to shift the inputs into the
 /// 4 most significant bits (bg color) and 4 least significant (fg color).
 /// - Note: `repr(transparent)` basically gets rid of excess memory storage
-/// 		for the struct; just the size of the u8.
+///     for the struct; just the size of the u8.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct ColorCode(u8);
