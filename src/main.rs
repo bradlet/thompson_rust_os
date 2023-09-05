@@ -17,7 +17,7 @@ use thompson_rust_os::println;
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     println!("Panic: {}", _info);
-    loop {}
+    thompson_rust_os::hlt_loop();
 }
 
 #[cfg(test)]
@@ -39,7 +39,7 @@ pub extern "C" fn _start() -> ! {
     #[cfg(test)]
     test_main();
 
-    loop {}
+    thompson_rust_os::hlt_loop();
 }
 
 #[cfg(test)]

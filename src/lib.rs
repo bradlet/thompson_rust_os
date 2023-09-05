@@ -13,6 +13,8 @@
 
 use core::panic::PanicInfo;
 
+use x86_64::instructions::hlt;
+
 pub mod gdt;
 pub mod interrupts;
 pub mod serial;
@@ -89,7 +91,7 @@ pub fn test_runner(tests: &[&dyn Testable]) {
 pub fn test_panic_handler(_info: &PanicInfo) -> ! {
     serial_println!("[failed]\n\nError: {}\n", _info);
     exit_qemu(QemuExitCode::Failed);
-    loop {}
+    hlt_loop();
 }
 
 #[cfg(test)]
@@ -104,5 +106,5 @@ fn panic(_info: &PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     init();
     test_main();
-    loop {}
+    hlt_loop();
 }
