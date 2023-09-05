@@ -13,8 +13,6 @@
 
 use core::panic::PanicInfo;
 
-use x86_64::instructions::hlt;
-
 pub mod gdt;
 pub mod interrupts;
 pub mod serial;
